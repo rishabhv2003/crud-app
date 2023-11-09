@@ -5,14 +5,14 @@
             <% if (message) { %>
                 <div class="alert alert-dismissible fade show alert-<%= message.type %>" role="alert">
                     <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
-                    <strong><%= message.message  %></strong>
+                    <strong><%= message.message %></strong>
                 </div>
             <% } %>
             <div class="table-responsive">
                 <% if (users!='') { %>
-                    <table class="table text-center my-3">
+                    <table id="myTable" class="table">
                         <thead>
-                            <tr class="table-dark">
+                            <tr class="table-dark align-middle">
                                 <th>ID</th>
                                 <th>Image</th>
                                 <th>Name</th>

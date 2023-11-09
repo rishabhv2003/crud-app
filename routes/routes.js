@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const multer = require('multer');
-
+const fs = require('fs');
 
 router.get('/', async (req, res) => {
     try {
@@ -48,6 +48,88 @@ router.post('/add', upload, async (req, res) => {
         res.redirect('/');
     } catch (err) {
         res.json({ message: err.message, type: 'danger' });
+    }
+});
+
+// edit the users
+router.get('/edit/:id', async (req, res) => {
+    try {
+        let id = req.params.id;
+        const user = await User.findById(id).exec();
+        if (user === null) {
+            res.redirect('/');
+        } else {
+            res.render('edit_users', {
+                title: 'Edit user',
+                user: user
+            });
+        }
+    } catch (err) {
+        res.redirect('/');
+    }
+});
+
+// update user route
+router.post('/update/:id', upload, async (req, res) => {
+    let id = req.params.id;
+    let new_image = '';
+
+    if (req.file) {
+        new_image = req.file.filename;
+        try {
+            fs.unlinkSync('./upload/' + req.body.old_image);
+        } catch (err) {
+            console.log(err);
+        }
+    } else {
+        new_image = req.body.old_image;
+    }
+
+
+    try {
+        const id = req.params.id;
+        const updatedUser = await User.findByIdAndUpdate(id, {
+            name: req.body.name,
+            email: req.body.email,
+            phone: req.body.phone,
+            image: new_image
+        });
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found', type: 'danger' });
+        }
+
+        req.session.message = {
+            type: 'success',
+            message: 'User updated successfully'
+        };
+        res.redirect('/');
+    } catch (err) {
+        res.status(500).json({ message: err.message, type: 'danger' });
+    }
+});
+
+// deleting the user
+router.get('/delete/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const result = await User.findByIdAndDelete(id).exec();
+
+        if (result && result.image) {
+            try {
+                fs.unlinkSync('./uploads/' + result.image);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        req.session.message = {
+            type: 'success',
+            message: 'User deleted successfully'
+        };
+        res.redirect('/');
+    } catch (err) {
+        res.json({ message: err.message });
     }
 });
 
